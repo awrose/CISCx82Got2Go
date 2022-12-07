@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "370495960890",
+    "project_id": "ciscx82got2gofinal",
+    "storage_bucket": "ciscx82got2gofinal.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:370495960890:android:f1e5866b6852bf7b928203",
+        "android_client_info": {
+          "package_name": "com.example.ciscx82got2go"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "370495960890-ab8nrdbbg1rgmcif3snkse6arg7050he.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCs2UorxaLO2OZbM1I9OsXOpViV8Vtdbg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "370495960890-ab8nrdbbg1rgmcif3snkse6arg7050he.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
