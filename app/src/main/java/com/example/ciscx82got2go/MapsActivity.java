@@ -118,19 +118,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener(){
 
+            //this will add a bathroom
             @Override
             public void onMapClick(@NonNull LatLng latLng) {
                 MarkerOptions markerOptions = new MarkerOptions();
                 markerOptions.position(latLng);
                 markerOptions.title(latLng.latitude+ " : " + latLng.longitude);
-                mMap.clear();
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+                markerOptions.icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com));
+                //open a dialog to ask questions about the bathroom
+                //store
                 mMap.addMarker(markerOptions);
             }
         });
 
         MarkerOptions newMarker = new MarkerOptions();
-        newMarker.position(new LatLng(37.42454954352804, -122.08442900329828)).title("CUSTOM MARKER").icon(BitmapFromVector(getApplicationContext(), R.drawable.ic_baseline_bathroom_24));
+        newMarker.position(new LatLng(37.42454954352804, -122.08442900329828)).title("CUSTOM MARKER").icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com));
         mMap.addMarker(newMarker);
 
         // Add a marker in Sydney and move the camera
