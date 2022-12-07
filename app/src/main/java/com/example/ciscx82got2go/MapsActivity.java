@@ -5,6 +5,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -15,6 +16,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -67,6 +70,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static int REQUEST_CODE = 101;
 
+    Marker newMarker;
+
     //to save the map's state
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
@@ -101,6 +106,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+
+
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -131,9 +138,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        MarkerOptions newMarker = new MarkerOptions();
-        newMarker.position(new LatLng(37.42454954352804, -122.08442900329828)).title("CUSTOM MARKER").icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com));
-        mMap.addMarker(newMarker);
+        //MarkerOptions newMarker = new MarkerOptions();
+        //newMarker.position(new LatLng(37.42454954352804, -122.08442900329828)).title("CUSTOM MARKER").icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com));
+        newMarker = mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(37.42454954352804, -122.08442900329828))
+                        .title("Custom Marker")
+                .icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com)));
+
 
         // Add a marker in Sydney and move the camera
         //LatLng sydney = new LatLng(-34, 151);
@@ -151,8 +162,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //LatLng sydney = new LatLng(-34, 151);
         //mMap.addMarker(new MarkerOptions().position(defaultLocation).title("I am here").icon(BitmapFromVector(getApplicationContext(), R.drawable.ic_baseline_bathroom_24)));
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(defaultLocation));
-    }
 
+        //mMap.setOnMarkerClickListener((GoogleMap.OnMarkerClickListener) this);
+        //newMarker.setOnMarkerClickListener()
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener(){
+
+            @Override
+            public boolean onMarkerClick(final Marker marker) {
+                String name = marker.getTitle();
+                if(name.equalsIgnoreCase("CUSTOM MARKER")){
+                    Log.e("myLog", "clicked");
+                    final Dialog locationInfo = new Dialog(MapsActivity.this);
+                    locationInfo.setTitle("Choose A Color:");
+                    locationInfo.setContentView(R.layout.marker1_info);
+
+                    Button closeBtn = (Button)locationInfo.findViewById(R.id.closeBtn);
+
+                    closeBtn.setOnClickListener(new View.OnClickListener(){
+                        @Override
+                        public void onClick(View v){
+                            locationInfo.dismiss();
+                        }
+                    });
+
+
+                    locationInfo.show();
+
+                }
+
+                return false;
+            }
+        });
+
+
+    }
     private void getLocationPermission() {
         /*
          * Request location permission, so that we can get the location of the
