@@ -100,11 +100,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //firebaseDatabase = FirebaseDatabase.getInstance();
-        //databaseReference = FirebaseDatabase.getInstance().getReference("LocationInfo");
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference("LocationInfo");
 
         //initialize object class variable
-        //locationInfo = new LocationInfo();
+        locationInfo = new LocationInfo();
 
         if (savedInstanceState != null) {
             lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
@@ -134,17 +134,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //addDatatoFirebase(name, phone, address)
     }
 
-    private void addDatatoFirebase(String locationName, String locationDescription, float lat, float longitude){
+    private void addDataToFirebase(String locationName, String locationDescription, float lat, float longitude){
         locationInfo.setLocationName(locationName);
         locationInfo.setLocationDescription(locationDescription);
         locationInfo.setLocationLat(lat);
         locationInfo.setLocationLong(longitude);
 
-        /*databaseReference.addValueEventListener(new ValueEventListener(){
+
+        databaseReference.addValueEventListener(new ValueEventListener(){
 
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                databaseReference.setValue(locationInfo);
+                //databaseReference.push().setValue(locationInfo);
+                //databaseReference.child("locations").child(locationName).setValue(locationInfo);
 
                 Toast.makeText(MapsActivity.this, "bathroom added", Toast.LENGTH_SHORT).show();
             }
@@ -155,7 +157,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
             }
-        });*/
+        });
     }
 
 
@@ -192,16 +194,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //Log.e("myLog", "tapped");
 
                 TextView inputLocationName = newBathroom.findViewById(R.id.idEditLocatinName);
-                String locationName = inputLocationName.getText().toString();
+                //String locationName = inputLocationName.getText().toString();
 
                 TextView inputDescription = newBathroom.findViewById(R.id.idEditLocationDescription);
-                String description = inputDescription.getText().toString();
+                //String description = inputDescription.getText().toString();
 
                 Button submit = newBathroom.findViewById(R.id.idBtnClose);
 
                 submit.setOnClickListener(new View.OnClickListener(){
                     @Override
                     public void onClick(View v){
+                        String locationName = inputLocationName.getText().toString();
+                        String description = inputDescription.getText().toString();
+
+                        addDataToFirebase(locationName, description, (float) latLng.latitude, (float) latLng.longitude);
                         //submit all the information to the database
                         //locationName, Description, Lat, Long
                         newBathroom.dismiss();
@@ -298,6 +304,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_CODE);
         }
+
 
     }
 
