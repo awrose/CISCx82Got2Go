@@ -13,10 +13,10 @@ public class LocationInfo {
     private String[] locationComments;
 
     //the latitude of the location
-    private double locationLat;
+    private float locationLat;
 
     //the longitude of the location
-    private double locationLong;
+    private float locationLong;
 
     //users ratings of the bathroom
     private int[] locationRatings;
@@ -60,19 +60,19 @@ public class LocationInfo {
         this.locationComments[this.locationComments.length - 1] = comment;
     }
 
-    public double getlocationLat(){
+    public float getlocationLat(){
         return locationLat;
     }
 
-    public void setLocationLat(int lat){
+    public void setLocationLat(float lat){
         this.locationLat = lat;
     }
 
-    public double getLocationLong(){
+    public float getLocationLong(){
         return locationLong;
     }
 
-    public void setLocationLong(int longitude){
+    public void setLocationLong(float longitude){
         this.locationLong = longitude;
     }
 

@@ -18,6 +18,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -81,8 +83,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
 
+    //Variable for firebase database
     FirebaseDatabase firebaseDatabase;
+    //variable for database reference
     DatabaseReference databaseReference;
+
+    //variable for object class
+    LocationInfo locationInfo;
 
 
 
@@ -93,8 +100,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        firebaseDatabase = FirebaseDatabase.getInstance();
-        databaseReference = FirebaseDatabase.getInstance().getReference();
+        //firebaseDatabase = FirebaseDatabase.getInstance();
+        //databaseReference = FirebaseDatabase.getInstance().getReference("LocationInfo");
+
+        //initialize object class variable
+        //locationInfo = new LocationInfo();
 
         if (savedInstanceState != null) {
             lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
@@ -117,8 +127,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        databaseReference = FirebaseDatabase.getInstance().getReference("post");
+        //useful code to try and have input information --> initializing the view
+        //locationNameEdit = findViewById(R.id.idEditLocationName);
+        //getting the textr
+        //String name = locationNameEdit.getText().toString;
+        //addDatatoFirebase(name, phone, address)
+    }
 
+    private void addDatatoFirebase(String locationName, String locationDescription, float lat, float longitude){
+        locationInfo.setLocationName(locationName);
+        locationInfo.setLocationDescription(locationDescription);
+        locationInfo.setLocationLat(lat);
+        locationInfo.setLocationLong(longitude);
+
+        /*databaseReference.addValueEventListener(new ValueEventListener(){
+
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                databaseReference.setValue(locationInfo);
+
+                Toast.makeText(MapsActivity.this, "bathroom added", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(MapsActivity.this, "failed to add bathroom" + error, Toast.LENGTH_SHORT).show();
+
+
+            }
+        });*/
     }
 
 
@@ -138,33 +175,68 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //can add markers, add listeners, or move the camera
         this.mMap = googleMap;
 
+        //creating a variable for document reference --> why? dk what this is
+        //DocumentReference documentReference = firebaseDatabase.collection("Locationinfo").document("7QWDor9vozLaHdFYV9kh");
+
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener(){
 
             //this will add a bathroom
             @Override
             public void onMapClick(@NonNull LatLng latLng) {
                 MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(latLng);
-                markerOptions.title(latLng.latitude+ " : " + latLng.longitude);
-                markerOptions.icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com));
-                //open a dialog to ask questions about the bathroom
-                //store
-                mMap.addMarker(markerOptions);
+                //popup
+                final Dialog newBathroom = new Dialog(MapsActivity.this);
+                newBathroom.setTitle("Enter Bathroom Info:");
+                newBathroom.setContentView(R.layout.new_bathroom_input);
+                newBathroom.show();
+                //Log.e("myLog", "tapped");
+
+                TextView inputLocationName = newBathroom.findViewById(R.id.idEditLocatinName);
+                String locationName = inputLocationName.getText().toString();
+
+                TextView inputDescription = newBathroom.findViewById(R.id.idEditLocationDescription);
+                String description = inputDescription.getText().toString();
+
+                Button submit = newBathroom.findViewById(R.id.idBtnClose);
+
+                submit.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View v){
+                        //submit all the information to the database
+                        //locationName, Description, Lat, Long
+                        newBathroom.dismiss();
+
+                        markerOptions.position(latLng);
+                        markerOptions.title(locationName);
+                        markerOptions.icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com));
+                        mMap.addMarker(markerOptions);
+
+
+                    }
+                });
+
+                //newBathroom.show();
+
+                //set markerOptions
+                /*markerOptions.position(latLng);
+                markerOptions.title(locationName);
+                markerOptions.icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com));*/
+                //mMap.addMarker(markerOptions);
             }
         });
 
         //MarkerOptions newMarker = new MarkerOptions();
         //newMarker.position(new LatLng(37.42454954352804, -122.08442900329828)).title("CUSTOM MARKER").icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com));
+        LocationInfo locationMarkerForTesting = new LocationInfo();
+        locationMarkerForTesting.setLocationName("Custom Marker - Test Bathroom 1");
+        locationMarkerForTesting.setLocationDescription("Male/Female/Gender Neutral, Open 24/7, No Key Needed to Access");
+        locationMarkerForTesting.setLocationType("Gas Station");
+        locationMarkerForTesting.setLocationLat((float) 37.42454954352804);
+        locationMarkerForTesting.setLocationLong((float) -122.08442900329828);
         newMarker = mMap.addMarker(new MarkerOptions()
-                .position(new LatLng(37.42454954352804, -122.08442900329828))
-                        .title("Custom Marker")
+                .position(new LatLng(locationMarkerForTesting.getlocationLat(), locationMarkerForTesting.getLocationLong()))
+                        .title(locationMarkerForTesting.getLocationName())
                 .icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com)));
-
-
-        // Add a marker in Sydney and move the camera
-        //LatLng sydney = new LatLng(-34, 151);
-        //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
         getLocationPermission();
 
@@ -184,14 +256,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             @Override
             public boolean onMarkerClick(final Marker marker) {
-                String name = marker.getTitle();
-                if(name.equalsIgnoreCase("CUSTOM MARKER")){
-                    Log.e("myLog", "clicked");
-                    final Dialog locationInfo = new Dialog(MapsActivity.this);
-                    locationInfo.setTitle("Choose A Color:");
-                    locationInfo.setContentView(R.layout.marker1_info);
+                //get the id of the marker that is clicked, then add a variable to the view, pass in the variable to the view
+                //String name = marker.getTitle();
+                TextView locationName = findViewById(R.id.bathroomBuildingName);
+                final Dialog locationInfo = new Dialog(MapsActivity.this);
+                locationInfo.setTitle("Bathroom");
+                locationInfo.setContentView(R.layout.marker1_info);
 
-                    Button closeBtn = (Button)locationInfo.findViewById(R.id.closeBtn);
+                Button closeBtn = (Button)locationInfo.findViewById(R.id.closeBtn);
+
+                    //textView.setText(marker.get)
 
                     closeBtn.setOnClickListener(new View.OnClickListener(){
                         @Override
@@ -202,8 +276,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
                     locationInfo.show();
-
-                }
 
                 return false;
             }
@@ -327,16 +399,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             });
         } else {
-            // The user has not granted permission.
-            //Log.i(TAG, "The user did not grant location permission.");
-
-            // Add a default marker, because the user hasn't selected a place.
-            /*mMap.addMarker(new MarkerOptions()
-                    .title("default")
-                    .position(defaultLocation)
-                    .snippet("default info snippet").icon(BitmapFromVector(getApplicationContext(), R.drawable.ic_baseline_bathroom_24)));*/
-
-            // Prompt the user for permission.
             getLocationPermission();
         }
     }
@@ -350,26 +412,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onSaveInstanceState(outState);
     }
 
-    //DON'T KNOW IF ANY OF THIS IS NECESSARY
-    /*@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.current_place_menu, menu);
-        return true;
-    }
-
-    /**
-     * Handles a click on the menu option to get a place.
-     * @param item The menu item to handle.
-     * @return Boolean.
-     */
-    // [START maps_current_place_on_options_item_selected]
-    /*@Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.option_get_place) {
-            showCurrentPlace();
-        }
-        return true;
-    }*/
 
     private void getDeviceLocation() {
         /*
