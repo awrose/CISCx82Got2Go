@@ -145,7 +145,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                //databaseReference.push().setValue(locationInfo);
+                databaseReference.setValue(locationInfo);
                 //databaseReference.child("locations").child(locationName).setValue(locationInfo);
 
                 Toast.makeText(MapsActivity.this, "bathroom added", Toast.LENGTH_SHORT).show();

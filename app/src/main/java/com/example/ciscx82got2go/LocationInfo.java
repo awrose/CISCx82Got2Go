@@ -10,7 +10,7 @@ public class LocationInfo {
     private String locationType;
 
     //comments that other users leave about the bathroom
-    private String[] locationComments;
+    //private String[] locationComments;
 
     //the latitude of the location
     private float locationLat;
@@ -19,7 +19,7 @@ public class LocationInfo {
     private float locationLong;
 
     //users ratings of the bathroom
-    private int[] locationRatings;
+    //private int[] locationRatings;
 
     //quick description about the location - free? accessible? what genders are availabe?
     private String locationDescription;
@@ -52,13 +52,13 @@ public class LocationInfo {
         this.locationType = locationType;
     }
 
-    public String[] getLocationComments() {
+    /*public String[] getLocationComments() {
         return locationComments;
     }
 
     public void setLocationComments(String comment){
         this.locationComments[this.locationComments.length - 1] = comment;
-    }
+    }*/
 
     public float getlocationLat(){
         return locationLat;
@@ -76,13 +76,13 @@ public class LocationInfo {
         this.locationLong = longitude;
     }
 
-    public int[] getlocationRatings(){
+    /*public int[] getlocationRatings(){
         return locationRatings;
     }
 
     public void setLocationRatings(int rating){
         this.locationRatings[this.locationRatings.length - 1] = rating;
-    }
+    }*/
 
     public String getLocationDescription(){
         return locationDescription;
@@ -92,13 +92,13 @@ public class LocationInfo {
         this.locationDescription = description;
     }
 
-    public int getratingAvg(){
+    /*public int getratingAvg(){
         int sum = 0;
         for(int i = 0; i<locationRatings.length; i++){
             sum += locationRatings[i];
         }
 
         return sum/locationRatings.length;
-    }
+    }*/
 
 }
