@@ -53,10 +53,12 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -106,6 +108,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ListView locationsLV;
     ArrayList<LocationInfo> locationInfoList;
 
+    private int id;
+
 
 
 
@@ -116,7 +120,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
 
         firebaseDatabase = FirebaseDatabase.getInstance();
-        databaseReference = FirebaseDatabase.getInstance().getReference("LocationInfo");
+        databaseReference = FirebaseDatabase.getInstance().getReference();
 
         locationInfoList = new ArrayList<>();
         getData();
@@ -149,32 +153,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void getData(){
-        databaseReference = FirebaseDatabase.getInstance().getReference();
-
-        databaseReference.addChildEventListener(new ChildEventListener(){
+        databaseReference.addValueEventListener(new ValueEventListener(){
 
             @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                locationInfoList.add(snapshot.getValue(LocationInfo.class));
-            }
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for(DataSnapshot postSnapshot: snapshot.getChildren()){
+                    LocationInfo locationInfo = postSnapshot.getValue(LocationInfo.class);
+                    locationInfoList.add(locationInfo);
 
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-            }
+                    //access to name property
 
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                locationInfoList.remove(snapshot.getValue(LocationInfo.class));
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                System.out.println("The read failed:" + error.getMessage());
             }
         });
+
     }
 
 
@@ -189,7 +186,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         databaseReference.addValueEventListener(new ValueEventListener(){
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                databaseReference.setValue(locationInfo);
+                databaseReference.child(locationName).setValue(locationInfo);
                 Toast.makeText(MapsActivity.this, "bathroom added", Toast.LENGTH_SHORT).show();
             }
             @Override
@@ -243,6 +240,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onClick(View v){
                         String locationName = inputLocationName.getText().toString();
                         String description = inputDescription.getText().toString();
+
 
                         addDataToFirebase(locationName, description, (float) latLng.latitude, (float) latLng.longitude);
                         //submit all the information to the database
