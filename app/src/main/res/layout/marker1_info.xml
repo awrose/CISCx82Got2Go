@@ -32,8 +32,8 @@
 
     <TextView
         android:id="@+id/buildingDescriptionInfo"
-        android:layout_width="156dp"
-        android:layout_height="58dp"
+        android:layout_width="162dp"
+        android:layout_height="94dp"
         android:layout_marginTop="22dp"
         android:text="@{locationInfo.locationDescription}"
         app:layout_constraintEnd_toEndOf="parent"
@@ -46,11 +46,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="73dp"
-        android:layout_marginTop="22dp"
+        android:layout_marginTop="44dp"
         android:layout_marginEnd="82dp"
         android:gravity="center"
         android:text="Rate"
         app:layout_constraintEnd_toStartOf="@+id/directionsBtn"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buildingDescriptionInfo" />
 
@@ -58,8 +59,8 @@
         android:id="@+id/directionsBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="22dp"
-        android:layout_marginEnd="44dp"
+        android:layout_marginTop="44dp"
+        android:layout_marginEnd="52dp"
         android:gravity="center"
         android:text="Directions"
         app:layout_constraintEnd_toEndOf="parent"
@@ -75,9 +76,10 @@
         android:text="close"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buildingDescriptionInfo" />
+        app:layout_constraintTop_toBottomOf="@+id/buildingDescriptionInfo"
+        app:layout_constraintVertical_bias="0.0" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

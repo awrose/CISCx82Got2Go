@@ -160,9 +160,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 for(DataSnapshot postSnapshot: snapshot.getChildren()){
                     LocationInfo locationInfo = postSnapshot.getValue(LocationInfo.class);
                     locationInfoList.add(locationInfo);
-
                     //access to name property
-
                 }
             }
 
@@ -271,14 +269,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //newMarker.position(new LatLng(37.42454954352804, -122.08442900329828)).title("CUSTOM MARKER").icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com));
         LocationInfo locationMarkerForTesting = new LocationInfo();
         locationMarkerForTesting.setLocationName("Custom Marker - Test Bathroom 1");
-        locationMarkerForTesting.setLocationDescription("Male/Female/Gender Neutral, Open 24/7, No Key Needed to Access");
+        locationMarkerForTesting.setLocationDescription("Male/Female/Gender Neutral\nOpen 24/7\nNo Key Needed to Access");
         locationMarkerForTesting.setLocationType("Gas Station");
         locationMarkerForTesting.setLocationLat((float) 37.42454954352804);
         locationMarkerForTesting.setLocationLong((float) -122.08442900329828);
-        newMarker = mMap.addMarker(new MarkerOptions()
+        locationInfoList.add(locationMarkerForTesting);
+        /*newMarker = mMap.addMarker(new MarkerOptions()
                 .position(new LatLng(locationMarkerForTesting.getlocationLat(), locationMarkerForTesting.getLocationLong()))
                 .title(locationMarkerForTesting.getLocationName())
-                .icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com)));
+                .icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com)));*/
 
         for(int i = 0; i<locationInfoList.size(); i++){
             newMarker = mMap.addMarker(new MarkerOptions()
@@ -295,11 +294,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public boolean onMarkerClick(final Marker marker) {
                 //get the id of the marker that is clicked, then add a variable to the view, pass in the variable to the view
-                //String name = marker.getTitle();
-                TextView locationName = findViewById(R.id.bathroomBuildingName);
+                String name = marker.getTitle();
+
                 final Dialog locationInfo = new Dialog(MapsActivity.this);
                 locationInfo.setTitle("Bathroom");
                 locationInfo.setContentView(R.layout.marker1_info);
+
+                TextView locationName = locationInfo.findViewById(R.id.bathroomBuildingName);
+                TextView ratings = locationInfo.findViewById(R.id.ratingText);
+                TextView locationDescription = locationInfo.findViewById(R.id.buildingDescriptionInfo);
+
+                //now find the index of the bathroom that is clicked
+
+                int index = -1;
+
+                for(int i = 0; i<locationInfoList.size(); i++){
+                    String currLocationName = locationInfoList.get(i).getLocationName();
+                    if(currLocationName.equalsIgnoreCase(name)){
+                        index = i;
+                    }
+                }
+
+                if(index != -1){
+                    //set the text
+                    locationName.setText(locationInfoList.get(index).getLocationName());
+                    ratings.setText("x / 5 ⭐");
+                    locationDescription.setText(locationInfoList.get(index).getLocationDescription());
+                }
 
                 Button closeBtn = (Button)locationInfo.findViewById(R.id.closeBtn);
 
