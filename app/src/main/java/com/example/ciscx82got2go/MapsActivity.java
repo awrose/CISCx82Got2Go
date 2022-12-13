@@ -1,6 +1,7 @@
 package com.example.ciscx82got2go;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -18,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,15 +44,19 @@ import com.google.android.libraries.places.api.model.PlaceLikelihood;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
+import java.util.Map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -79,6 +85,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     Marker newMarker;
 
+    //private ChildEventListener mChildEventListener;
+
+
     //to save the map's state
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
@@ -91,6 +100,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //variable for object class
     LocationInfo locationInfo;
 
+    //FirebaseFirestore db;
+    private LocationInfo[] markers;
+
+    private ListView locationsLV;
+    ArrayList<LocationInfo> locationInfoList;
+
 
 
 
@@ -102,6 +117,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("LocationInfo");
+
+        locationInfoList = new ArrayList<>();
+        getData();
+
+
 
         //initialize object class variable
         locationInfo = new LocationInfo();
@@ -126,13 +146,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        //useful code to try and have input information --> initializing the view
-        //locationNameEdit = findViewById(R.id.idEditLocationName);
-        //getting the textr
-        //String name = locationNameEdit.getText().toString;
-        //addDatatoFirebase(name, phone, address)
     }
+
+    private void getData(){
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+
+        databaseReference.addChildEventListener(new ChildEventListener(){
+
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                locationInfoList.add(snapshot.getValue(LocationInfo.class));
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                locationInfoList.remove(snapshot.getValue(LocationInfo.class));
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+    }
+
+
 
     private void addDataToFirebase(String locationName, String locationDescription, float lat, float longitude){
         locationInfo.setLocationName(locationName);
@@ -142,20 +187,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         databaseReference.addValueEventListener(new ValueEventListener(){
-
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 databaseReference.setValue(locationInfo);
-                //databaseReference.child("locations").child(locationName).setValue(locationInfo);
-
                 Toast.makeText(MapsActivity.this, "bathroom added", Toast.LENGTH_SHORT).show();
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(MapsActivity.this, "failed to add bathroom" + error, Toast.LENGTH_SHORT).show();
-
-
             }
         });
     }
@@ -177,8 +216,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //can add markers, add listeners, or move the camera
         this.mMap = googleMap;
 
-        //creating a variable for document reference --> why? dk what this is
-        //DocumentReference documentReference = firebaseDatabase.collection("Locationinfo").document("7QWDor9vozLaHdFYV9kh");
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener(){
 
@@ -220,16 +257,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     }
                 });
-
-                //newBathroom.show();
-
-                //set markerOptions
-                /*markerOptions.position(latLng);
-                markerOptions.title(locationName);
-                markerOptions.icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com));*/
-                //mMap.addMarker(markerOptions);
             }
         });
+
+
+        getLocationPermission();
+
+        //don't know what this does quite yet
+        updateLocationUI();
+
+        //get the current location of the device and set the position
+        getDeviceLocation();
 
         //MarkerOptions newMarker = new MarkerOptions();
         //newMarker.position(new LatLng(37.42454954352804, -122.08442900329828)).title("CUSTOM MARKER").icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com));
@@ -241,23 +279,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationMarkerForTesting.setLocationLong((float) -122.08442900329828);
         newMarker = mMap.addMarker(new MarkerOptions()
                 .position(new LatLng(locationMarkerForTesting.getlocationLat(), locationMarkerForTesting.getLocationLong()))
-                        .title(locationMarkerForTesting.getLocationName())
+                .title(locationMarkerForTesting.getLocationName())
                 .icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com)));
 
-        getLocationPermission();
+        for(int i = 0; i<locationInfoList.size(); i++){
+            newMarker = mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(locationInfoList.get(i).getlocationLat(), locationInfoList.get(i).getLocationLong()))
+                    .title(locationInfoList.get(i).getLocationName())
+                    .icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com))
+            );
+        }
 
-        //don't know what this does quite yet
-        updateLocationUI();
 
-        //get the current location of the device and set the position
-        getDeviceLocation();
-
-        //LatLng sydney = new LatLng(-34, 151);
-        //mMap.addMarker(new MarkerOptions().position(defaultLocation).title("I am here").icon(BitmapFromVector(getApplicationContext(), R.drawable.ic_baseline_bathroom_24)));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(defaultLocation));
-
-        //mMap.setOnMarkerClickListener((GoogleMap.OnMarkerClickListener) this);
-        //newMarker.setOnMarkerClickListener()
+        //add all of the markers within the database
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener(){
 
             @Override
