@@ -1,7 +1,6 @@
 package com.example.ciscx82got2go;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -12,18 +11,20 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -36,30 +37,30 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.example.ciscx82got2go.databinding.ActivityMapsBinding;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.PlaceLikelihood;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
-import com.google.firebase.database.ChildEventListener;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.nio.charset.Charset;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -111,6 +112,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private int id;
 
+    SearchView searchView;
+
 
 
 
@@ -122,6 +125,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference();
+
+        //searchView = findViewById(R.id.idSearchView);
+
+
 
         locationInfoList = new ArrayList<>();
         getData();
@@ -141,15 +148,54 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
 
+        //searchView = findViewById(R.id.idSearchView);
+
         // Construct a PlacesClient
-        Places.initialize(getApplicationContext(), getString(R.string.maps_api_key));
+        Places.initialize(getApplicationContext(), "AIzaSyA7t_QerDyB-Xuy3CyhC0fjF3U6tFFiDzE");
         placesClient = Places.createClient(this);
+
+
 
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+
+        //assert autocompleteFragment != null;
+        //autocompleteFragment.setTypeFilter(TypeFilter.ADDRESS);
+
+        /*autocompleteFragment.setLocationBias(RectangularBounds.newInstance(
+                new LatLng(-33.880490, 151.184363),
+                new LatLng(-33.858754, 151.229596)
+        ));*/
+
+        //autocompleteFragment.setCountries("IN");
+        
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG));
+
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener(){
+
+            @Override
+            public void onError(@NonNull Status status) {
+                Log.i(TAG, "An error occurred: " + status);
+            }
+
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
+                Log.i(TAG, "PLACE: " + place.getName() + " " + place.getId());
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(place.getLatLng().latitude,
+                                    place.getLatLng().longitude), DEFAULT_ZOOM));
+
+            }
+        });
+
+
+
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+
         mapFragment.getMapAsync(this);
     }
 
@@ -172,6 +218,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
     }
+
 
 
 
@@ -214,6 +261,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //can add markers, add listeners, or move the camera
         this.mMap = googleMap;
+
+
 
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener(){
@@ -267,6 +316,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
 
+
+
         getLocationPermission();
 
         //don't know what this does quite yet
@@ -292,6 +343,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com))
             );
         }
+
+
 
 
         //add all of the markers within the database
@@ -465,12 +518,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 });
 
+                Button directionsBtn = (Button) locationInfo.findViewById(R.id.directionsBtn);
+                //int directionsBtn = index;
+                directionsBtn.setOnClickListener(new View.OnClickListener() {
 
-                    locationInfo.show();
+                    @Override
+                    public void onClick(View view) {
+                        double destinationLat;
+                        double destinationLong;
+                        //find the latitude and longitude of the selected bathroom
+
+                        locationInfo.dismiss();
+                        if(finalIndex != -1) {
+                            destinationLat = locationInfoList.get(finalIndex).getlocationLat();
+                            destinationLong = locationInfoList.get(finalIndex).getLocationLong();
+
+                            Polyline directions = mMap.addPolyline(new PolylineOptions()
+                                    .clickable(true)
+                                    .add(
+                                            new LatLng(37.42247772216797, -122.08404541015625),
+                                            new LatLng(destinationLat, destinationLong)));
+
+                            mMap.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener() {
+                                @Override
+                                public void onPolylineClick(@NonNull Polyline polyline) {
+                                    polyline.remove();
+
+                                }
+                            });
+                        }
+
+
+                        //locationInfo.dismiss();
+
+
+                    }
+                });
+
+
+                        locationInfo.show();
 
                 return false;
             }
         });
+
+
 
 
     }
