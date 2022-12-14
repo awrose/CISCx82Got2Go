@@ -21,8 +21,8 @@
 
     <TextView
         android:id="@+id/ratingText"
-        android:layout_width="59dp"
-        android:layout_height="29dp"
+        android:layout_width="128dp"
+        android:layout_height="32dp"
         android:layout_marginTop="16dp"
         android:text="@{locationInfo.locationRating}/5 STARS"
         app:layout_constraintEnd_toEndOf="parent"

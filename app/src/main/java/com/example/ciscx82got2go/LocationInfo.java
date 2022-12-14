@@ -25,7 +25,13 @@ public class LocationInfo {
     private String locationDescription;
 
     //avg ratings
-    private int ratingAvg;
+    private int ratings;
+
+    private int databaseRatings;
+
+    private int count;
+
+    private int databaseCount;
 
     // an empty constructor is
     // required when using
@@ -36,6 +42,7 @@ public class LocationInfo {
 
     // created getter and setter methods
     // for all our variables.
+
     public String getLocationName() {
         return locationName;
     }
@@ -52,13 +59,6 @@ public class LocationInfo {
         this.locationType = locationType;
     }
 
-    /*public String[] getLocationComments() {
-        return locationComments;
-    }
-
-    public void setLocationComments(String comment){
-        this.locationComments[this.locationComments.length - 1] = comment;
-    }*/
 
     public float getlocationLat(){
         return locationLat;
@@ -76,13 +76,6 @@ public class LocationInfo {
         this.locationLong = longitude;
     }
 
-    /*public int[] getlocationRatings(){
-        return locationRatings;
-    }
-
-    public void setLocationRatings(int rating){
-        this.locationRatings[this.locationRatings.length - 1] = rating;
-    }*/
 
     public String getLocationDescription(){
         return locationDescription;
@@ -92,13 +85,40 @@ public class LocationInfo {
         this.locationDescription = description;
     }
 
-    /*public int getratingAvg(){
-        int sum = 0;
-        for(int i = 0; i<locationRatings.length; i++){
-            sum += locationRatings[i];
-        }
+    public void setRatings(int i){
+        this.ratings += i;
+    }
 
-        return sum/locationRatings.length;
-    }*/
+    public void setDatabaseRatings(int i){
+        this.databaseRatings = i;
+    }
+
+    public void setCount(){
+        this.count++;
+    }
+
+    public void setDatabaseCount(int i){
+        this.databaseCount = i;
+    }
+
+    public double getAvgRatings(){
+        if(ratings > 0 && count > 0){
+            return ratings/count;
+        }else{
+            return 0;
+        }
+    }
+
+    public int getCount(){
+        return count;
+    }
+
+    public int getRatings(){
+        return ratings;
+    }
+
+
+
+
 
 }

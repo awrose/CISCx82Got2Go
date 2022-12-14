@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -174,17 +175,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-    private void addDataToFirebase(String locationName, String locationDescription, float lat, float longitude){
+    private void addDataToFirebase(String locationName, String locationDescription, float lat, float longitude, int ratings, int count){
         locationInfo.setLocationName(locationName);
         locationInfo.setLocationDescription(locationDescription);
         locationInfo.setLocationLat(lat);
         locationInfo.setLocationLong(longitude);
+        locationInfo.setDatabaseRatings(ratings);
+        locationInfo.setDatabaseCount(count);
 
 
         databaseReference.addValueEventListener(new ValueEventListener(){
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 databaseReference.child(locationName).setValue(locationInfo);
+                locationInfoList.add(locationInfo);
                 Toast.makeText(MapsActivity.this, "bathroom added", Toast.LENGTH_SHORT).show();
             }
             @Override
@@ -239,16 +243,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         String locationName = inputLocationName.getText().toString();
                         String description = inputDescription.getText().toString();
 
+                        if(locationName.length() > 0) {
+                            addDataToFirebase(locationName, description, (float) latLng.latitude, (float) latLng.longitude, 0, 0);
 
-                        addDataToFirebase(locationName, description, (float) latLng.latitude, (float) latLng.longitude);
+                            markerOptions.position(latLng);
+                            markerOptions.title(locationName);
+                            markerOptions.icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com));
+                            mMap.addMarker(markerOptions);
+                        }
                         //submit all the information to the database
                         //locationName, Description, Lat, Long
                         newBathroom.dismiss();
 
-                        markerOptions.position(latLng);
+                        /*markerOptions.position(latLng);
                         markerOptions.title(locationName);
                         markerOptions.icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com));
-                        mMap.addMarker(markerOptions);
+                        mMap.addMarker(markerOptions);*/
 
 
                     }
@@ -274,10 +284,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationMarkerForTesting.setLocationLat((float) 37.42454954352804);
         locationMarkerForTesting.setLocationLong((float) -122.08442900329828);
         locationInfoList.add(locationMarkerForTesting);
-        /*newMarker = mMap.addMarker(new MarkerOptions()
-                .position(new LatLng(locationMarkerForTesting.getlocationLat(), locationMarkerForTesting.getLocationLong()))
-                .title(locationMarkerForTesting.getLocationName())
-                .icon(BitmapFromVector(getApplicationContext(), R.drawable.toilet_svgrepo_com)));*/
 
         for(int i = 0; i<locationInfoList.size(); i++){
             newMarker = mMap.addMarker(new MarkerOptions()
@@ -318,7 +324,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if(index != -1){
                     //set the text
                     locationName.setText(locationInfoList.get(index).getLocationName());
-                    ratings.setText("x / 5 ⭐");
+                    ratings.setText(locationInfoList.get(index).getAvgRatings() + " / 5 ⭐");
                     locationDescription.setText(locationInfoList.get(index).getLocationDescription());
                 }
 
@@ -332,6 +338,132 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             locationInfo.dismiss();
                         }
                     });
+
+                Button rateBtn = (Button) locationInfo.findViewById(R.id.rateBtn);
+                int finalIndex = index;
+                rateBtn.setOnClickListener(new View.OnClickListener(){
+
+                    @Override
+                    public void onClick(View view) {
+                        int count = 0;
+                        int ratings = 0;
+
+                        final Dialog ratingPage = new Dialog(MapsActivity.this);
+                        ratingPage.setTitle("Bathroom");
+                        ratingPage.setContentView(R.layout.ratings_popup);
+
+                        //get each star button
+                        ImageButton star1 = (ImageButton)ratingPage.findViewById(R.id.star1);
+                        ImageButton star2 = (ImageButton)ratingPage.findViewById(R.id.star2);
+                        ImageButton star3 = (ImageButton)ratingPage.findViewById(R.id.star3);
+                        ImageButton star4 = (ImageButton)ratingPage.findViewById(R.id.star4);
+                        ImageButton star5 = (ImageButton)ratingPage.findViewById(R.id.star5);
+
+                        star1.setOnClickListener(new View.OnClickListener(){
+
+                            @Override
+                            public void onClick(View view) {
+                                //set ratingstotal to += 1,
+                                //set count to ++
+                                if(finalIndex != -1) {
+                                    locationInfoList.get(finalIndex).setCount();
+                                    locationInfoList.get(finalIndex).setRatings(1);
+
+                                    databaseReference.child(locationInfoList.get(finalIndex).getLocationName()).child("count").setValue(locationInfoList.get(finalIndex).getCount());
+                                    databaseReference.child(locationInfoList.get(finalIndex).getLocationName()).child("ratings").setValue(locationInfoList.get(finalIndex).getRatings());
+                                }
+
+                                //close both
+                                ratingPage.dismiss();
+                                locationInfo.dismiss();
+                            }
+                        });
+
+                        star2.setOnClickListener(new View.OnClickListener(){
+
+                            @Override
+                            public void onClick(View view) {
+                                //set ratingstotal to += 1,
+                                //set count to ++
+                                if(finalIndex != -1) {
+                                    locationInfoList.get(finalIndex).setCount();
+                                    locationInfoList.get(finalIndex).setRatings(2);
+
+                                    databaseReference.child(locationInfoList.get(finalIndex).getLocationName()).child("count").setValue(locationInfoList.get(finalIndex).getCount());
+                                    databaseReference.child(locationInfoList.get(finalIndex).getLocationName()).child("ratings").setValue(locationInfoList.get(finalIndex).getRatings());
+                                }
+
+                                //close both
+                                ratingPage.dismiss();
+                                locationInfo.dismiss();
+                            }
+                        });
+
+                        star3.setOnClickListener(new View.OnClickListener(){
+
+                            @Override
+                            public void onClick(View view) {
+                                //set ratingstotal to += 1,
+                                //set count to ++
+                                if(finalIndex != -1) {
+                                    locationInfoList.get(finalIndex).setCount();
+                                    locationInfoList.get(finalIndex).setRatings(3);
+
+                                    databaseReference.child(locationInfoList.get(finalIndex).getLocationName()).child("count").setValue(locationInfoList.get(finalIndex).getCount());
+                                    databaseReference.child(locationInfoList.get(finalIndex).getLocationName()).child("ratings").setValue(locationInfoList.get(finalIndex).getRatings());
+                                }
+
+                                //close both
+                                ratingPage.dismiss();
+                                locationInfo.dismiss();
+                            }
+                        });
+
+                        star4.setOnClickListener(new View.OnClickListener(){
+
+                            @Override
+                            public void onClick(View view) {
+                                //set ratingstotal to += 1,
+                                //set count to ++
+                                if(finalIndex != -1) {
+                                    locationInfoList.get(finalIndex).setCount();
+                                    locationInfoList.get(finalIndex).setRatings(4);
+
+                                    databaseReference.child(locationInfoList.get(finalIndex).getLocationName()).child("count").setValue(locationInfoList.get(finalIndex).getCount());
+                                    databaseReference.child(locationInfoList.get(finalIndex).getLocationName()).child("ratings").setValue(locationInfoList.get(finalIndex).getRatings());
+                                }
+
+                                //close both
+                                ratingPage.dismiss();
+                                locationInfo.dismiss();
+                            }
+                        });
+
+                        star5.setOnClickListener(new View.OnClickListener(){
+
+                            @Override
+                            public void onClick(View view) {
+                                //set ratingstotal to += 1,
+                                //set count to ++
+                                if(finalIndex != -1) {
+                                    locationInfoList.get(finalIndex).setCount();
+                                    locationInfoList.get(finalIndex).setRatings(5);
+
+                                    databaseReference.child(locationInfoList.get(finalIndex).getLocationName()).child("count").setValue(locationInfoList.get(finalIndex).getCount());
+                                    databaseReference.child(locationInfoList.get(finalIndex).getLocationName()).child("ratings").setValue(locationInfoList.get(finalIndex).getRatings());
+                                }
+
+                                //close both
+                                ratingPage.dismiss();
+                                locationInfo.dismiss();
+                            }
+                        });
+
+
+                        ratingPage.show();
+
+                    }
+                });
 
 
                     locationInfo.show();
